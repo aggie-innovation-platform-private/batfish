@@ -12,6 +12,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -100,6 +101,9 @@ public class FortiosConfiguration extends VendorConfiguration {
             .collect(ImmutableMap.toImmutableMap(Service::getName, svc -> svc.toMatchExpr(_w)));
     _policies.values().forEach(policy -> convertPolicy(policy, c, convertedServices));
 
+    // Convert interfaces. Must happen after converting policies
+    _interfaces.values().forEach(iface -> convertInterface(iface, c));
+
     // Count structure references
     markConcreteStructure(FortiosStructureType.ADDRESS);
     markConcreteStructure(FortiosStructureType.SERVICE_CUSTOM);
@@ -112,5 +116,31 @@ public class FortiosConfiguration extends VendorConfiguration {
     policy
         .toIpAccessList(c.getIpSpaces(), convertedServices, _w)
         .ifPresent(acl -> c.getIpAccessLists().put(acl.getName(), acl));
+  }
+
+  private void convertInterface(Interface iface, Configuration c) {
+    String vdom = iface.getVdom();
+    assert vdom != null; // An interface with no VDOM set should fail in extraction
+    String vrfName = computeVrfName(vdom, iface.getVrfEffective());
+    // TODO Does referencing a VRF from an interface implicitly create it?
+    Vrf vrf = c.getVrfs().get(vrfName);
+    if (vrf == null) {
+      vrf = Vrf.builder().setOwner(c).setName(vrfName).build();
+    }
+    // TODO Handle interface type
+    org.batfish.datamodel.Interface.builder()
+        .setOwner(c)
+        .setName(iface.getName())
+        .setVrf(vrf)
+        .setDescription(iface.getDescription())
+        .setActive(iface.getStatusEffective())
+        .setAddress(iface.getIp())
+        .setMtu(iface.getMtuEffective())
+        .setType(iface.getType().toViType())
+        .build();
+  }
+
+  private static String computeVrfName(String vdom, int vrf) {
+    return String.format("%s:%s", vdom, vrf);
   }
 }

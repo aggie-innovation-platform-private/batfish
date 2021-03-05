@@ -2,6 +2,7 @@ package org.batfish.representation.fortios;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+import static org.batfish.representation.fortios.FortiosConfiguration.computePolicyName;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -168,6 +169,6 @@ public final class Policy implements Serializable {
     ExprAclLine.Builder line =
         getActionEffective() == Action.ALLOW ? ExprAclLine.accepting() : ExprAclLine.rejecting();
     line.setMatchCondition(and(matchConjuncts.build()));
-    return IpAccessList.builder().setName(_number).setLines(line.build()).build();
+    return IpAccessList.builder().setName(computePolicyName(this)).setLines(line.build()).build();
   }
 }

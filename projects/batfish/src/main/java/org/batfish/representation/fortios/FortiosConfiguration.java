@@ -1,5 +1,7 @@
 package org.batfish.representation.fortios;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+
 import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -130,7 +132,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     List<IpAccessList> viPolicies =
         _policies.values().stream()
             .filter(policy -> policy.getDstIntf().contains(iface.getName()))
-            .map(policy -> c.getIpAccessLists().get(policy.getNumber()))
+            .map(policy -> c.getIpAccessLists().get(computePolicyName(policy)))
             .filter(Objects::nonNull)
             .collect(ImmutableList.toImmutableList());
     if (viPolicies.isEmpty()) {
@@ -143,7 +145,7 @@ public class FortiosConfiguration extends VendorConfiguration {
         .map(IpAccessList::getName)
         .map(policyName -> new AclAclLine("Match policy " + policyName, policyName))
         .forEach(lines::add);
-    lines.add(ExprAclLine.ACCEPT_ALL); // TODO Check default action
+    lines.add(ExprAclLine.REJECT_ALL); // TODO Check default action
     return IpAccessList.builder()
         .setOwner(c)
         .setName(outgoingFilterName(iface.getName()))
@@ -158,7 +160,12 @@ public class FortiosConfiguration extends VendorConfiguration {
     }
     // TODO: Should we incorporate policy.getName() it its name if present?
     // TODO: Might need to generate IpAccessList names per VRF/VDOM
-    c.getIpAccessLists().put(policy.getNumber(), policy.toIpAccessList());
+    c.getIpAccessLists().put(computePolicyName(policy), policy.toIpAccessList());
+  }
+
+  static String computePolicyName(Policy policy) {
+    // TODO: Might need to generate IpAccessList names per VRF/VDOM
+    return firstNonNull(policy.getName(), policy.getNumber());
   }
 
   private static String vrfName(String vdom, int vrf) {

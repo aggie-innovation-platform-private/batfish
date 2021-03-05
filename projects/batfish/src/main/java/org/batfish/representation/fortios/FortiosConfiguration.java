@@ -2,16 +2,17 @@ package org.batfish.representation.fortios;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AclAclLine;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -141,7 +142,39 @@ public class FortiosConfiguration extends VendorConfiguration {
     viIface.build();
   }
 
+  private @Nullable IpAccessList generateOutgoingFilter(Interface iface, Configuration c) {
+    List<IpAccessList> viPolicies =
+        _policies.values().stream()
+            .filter(policy -> policy.getDstIntf().contains(iface.getName()))
+            .map(
+                policy ->
+                    c.getIpAccessLists()
+                        .get(Policy.computeViName(policy.getName(), policy.getNumber())))
+            .filter(Objects::nonNull)
+            .collect(ImmutableList.toImmutableList());
+    if (viPolicies.isEmpty()) {
+      return null;
+    } else if (viPolicies.size() == 1) {
+      return viPolicies.get(0);
+    }
+    ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
+    viPolicies.stream()
+        .map(IpAccessList::getName)
+        .map(policyName -> new AclAclLine("Match policy " + policyName, policyName))
+        .forEach(lines::add);
+    lines.add(ExprAclLine.ACCEPT_ALL); // TODO Check default action
+    return IpAccessList.builder()
+        .setOwner(c)
+        .setName(computeOutgoingFilterName(iface.getName()))
+        .setLines(lines.build())
+        .build();
+  }
+
   private static String computeVrfName(String vdom, int vrf) {
     return String.format("%s:%s", vdom, vrf);
+  }
+
+  private static String computeOutgoingFilterName(String iface) {
+    return String.format("~%s~outgoing~", iface);
   }
 }

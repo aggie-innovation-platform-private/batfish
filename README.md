@@ -1,4 +1,6 @@
+**Got questions, feedback, or feature requests? Join our community on [Slack!](https://join.slack.com/t/batfish-org/shared_invite/enQtMzA0Nzg2OTAzNzQ1LTcyYzY3M2Q0NWUyYTRhYjdlM2IzYzRhZGU1NWFlNGU2MzlhNDY3OTJmMDIyMjQzYmRlNjhkMTRjNWIwNTUwNTQ)**
 
+[![CIS](https://app.soluble.cloud/api/v1/public/badges/94a43dba-e292-40b9-ba4d-485f4514f65b.svg)](https://app.soluble.cloud/repos/details/github.com/aggie-innovation-platform-private/batfish)  [![HIPAA](https://app.soluble.cloud/api/v1/public/badges/6838bf42-70ed-45bb-b699-b4f8a7c0115c.svg)](https://app.soluble.cloud/repos/details/github.com/aggie-innovation-platform-private/batfish)  [![IaC](https://app.soluble.cloud/api/v1/public/badges/031ba235-0fd4-480f-a8fd-407c20870b0f.svg)](https://app.soluble.cloud/repos/details/github.com/aggie-innovation-platform-private/batfish)  
 **Got questions, feedback, or feature requests? Join our community on [Slack!](https://join.slack.com/t/batfish-org/shared_invite/enQtMzA0Nzg2OTAzNzQ1LTcyYzY3M2Q0NWUyYTRhYjdlM2IzYzRhZGU1NWFlNGU2MzlhNDY3OTJmMDIyMjQzYmRlNjhkMTRjNWIwNTUwNTQ)**
 
 [![codecov](https://codecov.io/gh/batfish/batfish/branch/master/graph/badge.svg)](https://codecov.io/gh/batfish/batfish)
